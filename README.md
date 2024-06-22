@@ -1,6 +1,6 @@
 # ds1
 
-A minimal web development server with live reload.
+Minimal web development server with live reload.
 
 ## Installation
 
