@@ -1,0 +1,38 @@
+{
+  "name": "ds1",
+  "version": "0.1.0",
+  "description": "Minimal web development server with live reload",
+  "author": "Morris Brodersen <mb@morrisbrodersen.de>",
+  "license": "ISC",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "exports": "./dist/index.js",
+  "bin": "./dist/bin.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "format": "prettier --write .",
+    "format-check": "prettier --check .",
+    "lint": "eslint .",
+    "test": "playwright test",
+    "dev": "tsc --project tsconfig.build.json && node dist/bin.js test/fixture"
+  },
+  "dependencies": {
+    "mime": "^4.0.1",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.1",
+    "@types/node": "^20.11.30",
+    "@types/ws": "^8.5.10",
+    "@typescript-eslint/eslint-plugin": "^7.7.1",
+    "@typescript-eslint/parser": "^7.7.1",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.1",
+    "typescript": "^5.4.5"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "include": ["src", "test"],
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "strict": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+
+    "target": "ES2022",
+    "module": "ES2022",
+    "declaration": true,
+    "sourceMap": true,
+
+    "noEmit": true
+  }
+}
