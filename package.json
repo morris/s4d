@@ -2,8 +2,21 @@
   "name": "ds1",
   "version": "0.1.0",
   "description": "Minimal web development server with live reload",
+  "keywords": [
+    "local",
+    "development",
+    "server"
+  ],
   "author": "Morris Brodersen <mb@morrisbrodersen.de>",
   "license": "ISC",
+  "homepage": "https://github.com/morris/ds1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/morris/ds1.git"
+  },
+  "bugs": {
+    "url": "https://github.com/morris/ds1/issues"
+  },
   "type": "module",
   "engines": {
     "node": ">=20"
