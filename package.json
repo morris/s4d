@@ -22,7 +22,9 @@
     "node": ">=20"
   },
   "exports": "./dist/index.js",
-  "bin": "./dist/bin.js",
+  "bin": {
+    "s4d": "dist/bin.js"
+  },
   "files": [
     "dist"
   ],

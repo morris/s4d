@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { DevServer } from './DevServer.js';
 
 DevServer.cli(process.argv.slice(2))
