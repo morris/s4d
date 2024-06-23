@@ -104,7 +104,7 @@ export class DevServer {
   }
 
   static help() {
-    return `ds1 [options] <webroot>
+    return `s4d [options] <webroot>
 
   --help, -h      Show this help.
   --host <host>   Set hostname. Default is "localhost".

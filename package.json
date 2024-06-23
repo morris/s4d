@@ -1,5 +1,5 @@
 {
-  "name": "ds1",
+  "name": "s4d",
   "version": "0.1.0",
   "description": "Minimal web development server with live reload",
   "keywords": [
@@ -9,13 +9,13 @@
   ],
   "author": "Morris Brodersen <mb@morrisbrodersen.de>",
   "license": "ISC",
-  "homepage": "https://github.com/morris/ds1",
+  "homepage": "https://github.com/morris/s4d",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/morris/ds1.git"
+    "url": "git+https://github.com/morris/s4d.git"
   },
   "bugs": {
-    "url": "https://github.com/morris/ds1/issues"
+    "url": "https://github.com/morris/s4d/issues"
   },
   "type": "module",
   "engines": {

@@ -1,18 +1,18 @@
-# ds1
+# s4d
 
 Minimal web development server with live reload.
 
 ## Installation
 
 ```sh
-npm install ds1 --save-dev # project local installation (preferred)
-npm install ds1 --global # global installation
+npm install s4d --save-dev # project local installation (preferred)
+npm install s4d --global # global installation
 ```
 
 ## Usage
 
 ```
-ds1 [options] <webroot>
+s4d [options] <webroot>
 
   --help, -h      Show this help.
   --host <host>   Set hostname. Default is "localhost".
@@ -25,13 +25,13 @@ ds1 [options] <webroot>
 Examples:
 
 ```sh
-ds1 public
-ds1 --port 3000 public
-ds1 --port 3000 --spa public
-ds1 --port 3000 --host 0.0.0.0 --spa public # Expose over network
+s4d public
+s4d --port 3000 public
+s4d --port 3000 --spa public
+s4d --port 3000 --host 0.0.0.0 --spa public # Expose over network
 ```
 
-When installed locally in a project, run with `npx ds1 [args...]`,
+When installed locally in a project, run with `npx s4d [args...]`,
 unless running from an npm script.
 
 ## Live Reload Behavior
