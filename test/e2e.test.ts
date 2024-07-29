@@ -25,11 +25,13 @@ test.beforeAll(async () => {
   await devServer.start();
 });
 
-test.afterAll(async () => {
-  await devServer.close();
-
+test.afterEach(() => {
   writeFileSync('test/fixture/index.html', indexOriginal);
   writeFileSync('test/fixture/style.css', styleOriginal);
+});
+
+test.afterAll(async () => {
+  await devServer.close();
 });
 
 test('Serves fixture', async ({ page }) => {
@@ -38,8 +40,31 @@ test('Serves fixture', async ({ page }) => {
   await expect(page.locator('h1')).toHaveText('Hello, World!');
 });
 
+test('Serves index.html for non-existing paths', async ({ page }) => {
+  await page.goto('http://localhost:3000/other');
+
+  await expect(page.locator('h1')).toHaveText('Hello, World!');
+});
+
 test('Causes reload when index.html is modified', async ({ page }) => {
   await page.goto('http://localhost:3000');
+
+  await expect(page.locator('h1')).toHaveText('Hello, World!');
+  await page.locator('[name=testInput]').fill('This clears because of reload');
+
+  writeFileSync(
+    'test/fixture/index.html',
+    indexOriginal.replace(/Hello, World!/g, 'Hello, Test!'),
+  );
+
+  await expect(page.locator('h1')).toHaveText('Hello, Test!');
+  await expect(page.locator('[name=testInput]')).toHaveValue('');
+});
+
+test('Causes reload for non-existing paths when index.html is modified', async ({
+  page,
+}) => {
+  await page.goto('http://localhost:3000/other');
 
   await expect(page.locator('h1')).toHaveText('Hello, World!');
   await page.locator('[name=testInput]').fill('This clears because of reload');

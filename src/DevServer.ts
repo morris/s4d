@@ -12,6 +12,12 @@ export interface DevServerOptions {
   spa?: boolean;
 }
 
+interface FileCacheEntry {
+  contents: string | Buffer;
+  contentType: string;
+  version: string;
+}
+
 export class DevServer {
   protected webroot: string;
   protected port: number;
@@ -22,7 +28,7 @@ export class DevServer {
   protected webSocketServer: WebSocketServer;
   protected fileWatcher?: fs.FSWatcher;
 
-  protected fileCache = new Map();
+  protected fileCache = new Map<string, Promise<FileCacheEntry>>();
   protected webSockets = new Set<WebSocket>();
 
   constructor(options: DevServerOptions) {
@@ -166,8 +172,15 @@ export class DevServer {
 
     try {
       const file = path.join(this.webroot, path.resolve('.', url.pathname));
-      const { contents, contentType, version } =
-        await this.resolveFileCached(file);
+      const { contents, contentType, version } = await this.resolveFileCached(
+        file,
+      ).catch((err) => {
+        if (this.spa && (err as { code?: string }).code === 'ENOENT') {
+          return this.resolveFileCached(path.join(this.webroot, 'index.html'));
+        }
+
+        throw err;
+      });
 
       if (req.headers['if-none-match'] === version) {
         res.writeHead(304);
@@ -337,26 +350,14 @@ export class DevServer {
       };
     }
 
-    let contents: string | Buffer;
+    const stat = await fs.promises.lstat(file);
 
-    try {
-      const stat = await fs.promises.lstat(file);
-
-      if (stat.isDirectory()) {
-        file = path.join(file, 'index.html');
-      }
-
-      contents = await fs.promises.readFile(file);
-    } catch (err) {
-      if (this.spa && (err as { code?: string }).code === 'ENOENT') {
-        file = path.join(this.webroot, 'index.html');
-        contents = await fs.promises.readFile(file);
-      } else {
-        throw err;
-      }
+    if (stat.isDirectory()) {
+      file = path.join(file, 'index.html');
     }
 
-    contents = await this.transformFileContents(file, contents);
+    const buffer = await fs.promises.readFile(file);
+    const contents = await this.transformFileContents(file, buffer);
     const contentType = mime.getType(file) ?? 'application/octet-stream';
     const version = crypto.createHash('sha1').update(contents).digest('base64');
 
@@ -365,8 +366,8 @@ export class DevServer {
 
   invalidateFile(file: string) {
     this.fileCache.delete(file);
-    this.fileCache.delete(file.replace(/index.html$/, ''));
-    this.fileCache.delete(file.replace(/\/index.html$/, ''));
+    this.fileCache.delete(file.replace(/index\.html$/, ''));
+    this.fileCache.delete(file.replace(/\/index\.html$/, ''));
   }
 
   async close() {
