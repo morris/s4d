@@ -1,0 +1,4 @@
+* text=auto eol=lf
+scripts/** linguist-vendored
+test/fixtures/** linguist-vendored
+
