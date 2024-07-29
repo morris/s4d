@@ -1,6 +1,6 @@
 # Changelog
 
-## NEXT
+## 0.1.2
 
 - Fix issue where the index fallback in SPA mode would not reload properly
 - Update dependencies
