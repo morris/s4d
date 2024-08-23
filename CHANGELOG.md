@@ -1,6 +1,6 @@
 # Changelog
 
-## NEXT
+## 0.2.0
 
 - With `--spa`, only serve `index.html` when path does not include a `.`
 - Remove file caching in favor of OS cache and streaming
