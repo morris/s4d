@@ -65,6 +65,7 @@ export class DevServer {
             if (!(port >= 0 && port <= 65535)) {
               throw new Error(`Invalid port "${port}"`);
             }
+
             break;
           case '--host':
             if (i + 1 >= argv.length) {
@@ -72,6 +73,7 @@ export class DevServer {
             }
 
             host = argv[++i];
+            break;
           case '--spa':
             spa = true;
             break;
