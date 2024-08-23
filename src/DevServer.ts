@@ -1,4 +1,3 @@
-import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as http from 'http';
 import mime from 'mime';
@@ -12,12 +11,6 @@ export interface DevServerOptions {
   spa?: boolean;
 }
 
-interface FileCacheEntry {
-  contents: string | Buffer;
-  contentType: string;
-  version: string;
-}
-
 export class DevServer {
   protected webroot: string;
   protected port: number;
@@ -28,7 +21,6 @@ export class DevServer {
   protected webSocketServer: WebSocketServer;
   protected fileWatcher?: fs.FSWatcher;
 
-  protected fileCache = new Map<string, Promise<FileCacheEntry>>();
   protected webSockets = new Set<WebSocket>();
 
   constructor(options: DevServerOptions) {
@@ -170,46 +162,77 @@ export class DevServer {
 
     const url = new URL(req.url ?? '/', this.getBaseURL());
 
-    try {
-      const file = path.join(this.webroot, path.resolve('.', url.pathname));
-      const { contents, contentType, version } = await this.resolveFileCached(
-        file,
-      ).catch((err) => {
-        if (this.spa && (err as { code?: string }).code === 'ENOENT') {
-          return this.resolveFileCached(path.join(this.webroot, 'index.html'));
-        }
+    let file = path.join(this.webroot, path.resolve('.', url.pathname));
 
-        throw err;
-      });
+    if (file.match(/__DEV__\.js$/)) {
+      const clientScript = this.getClientScript();
+      const etag = `W/${clientScript.length.toString(16)}`;
 
-      if (req.headers['if-none-match'] === version) {
+      if (req.headers['if-none-match'] === etag) {
         res.writeHead(304);
         res.end();
 
         return;
       }
 
-      res.setHeader('content-type', contentType);
-      res.setHeader('etag', version);
+      res.setHeader('content-type', 'application/javascript');
+      res.setHeader('etag', etag);
       res.writeHead(200);
+      res.end(this.getClientScript());
 
-      if (req.method === 'HEAD') {
-        res.end();
-      } else {
-        res.end(contents);
-      }
-    } catch (err) {
-      if ((err as { code?: string }).code === 'ENOENT') {
-        res.setHeader('content-type', 'text/plain');
-        res.writeHead(404);
-        res.end('Not found');
-      } else {
-        console.error(err);
+      return;
+    }
 
-        res.setHeader('content-type', 'text/plain');
-        res.writeHead(500);
-        res.end(`Internal server error: ${(err as Error).message}`);
-      }
+    let stats = await this.stat(file);
+
+    if (stats?.isDirectory()) {
+      file = path.join(file, 'index.html');
+      stats = await this.stat(file);
+    }
+
+    if (!stats && this.spa && !url.pathname.includes('.')) {
+      file = path.join(this.webroot, 'index.html');
+      stats = await this.stat(file);
+    }
+
+    if (!stats) {
+      res.setHeader('content-type', 'text/plain');
+      res.writeHead(404);
+      res.end('Not found');
+
+      return;
+    }
+
+    const etag = `W/"${stats.size.toString(16)}-${stats.mtimeMs.toString(16)}"`;
+
+    if (req.headers['if-none-match'] === etag) {
+      res.writeHead(304);
+      res.end();
+
+      return;
+    }
+
+    const contentType = mime.getType(file) ?? 'application/octet-stream';
+
+    res.setHeader('content-type', contentType);
+    res.setHeader('etag', etag);
+    res.writeHead(200);
+
+    if (req.method === 'HEAD') {
+      res.end();
+    } else {
+      const out = fs.createReadStream(file);
+      const ext = path.extname(file);
+
+      out.on('end', () => {
+        if (ext === '.html') {
+          res.end('<script type="module" src="__DEV__.js"></script>');
+        } else {
+          res.end();
+        }
+      });
+
+      out.pipe(res, { end: false });
     }
   }
 
@@ -218,7 +241,6 @@ export class DevServer {
 
     this.fileWatcher.on('change', (_, filename) => {
       if (typeof filename === 'string') {
-        this.invalidateFile(path.join(this.webroot, filename));
         this.broadcast({ type: 'change', url: filename });
       }
     });
@@ -233,16 +255,6 @@ export class DevServer {
         webSocket.terminate();
       }
     }
-  }
-
-  async transformFileContents(file: string, contents: string | Buffer) {
-    const ext = path.extname(file);
-
-    if (ext === '.html') {
-      return `${contents}<script type="module" src="__DEV__.js"></script>`;
-    }
-
-    return contents;
   }
 
   getClientScript() {
@@ -331,43 +343,8 @@ export class DevServer {
     }`;
   }
 
-  async resolveFileCached(file: string) {
-    const cached = this.fileCache.get(file);
-    if (cached) return cached;
-
-    const promise = this.resolveFile(file);
-    this.fileCache.set(file, promise);
-
-    return promise;
-  }
-
-  async resolveFile(file: string) {
-    if (file.match(/__DEV__\.js$/)) {
-      return {
-        contents: this.getClientScript(),
-        contentType: 'application/javascript',
-        version: '1',
-      };
-    }
-
-    const stat = await fs.promises.lstat(file);
-
-    if (stat.isDirectory()) {
-      file = path.join(file, 'index.html');
-    }
-
-    const buffer = await fs.promises.readFile(file);
-    const contents = await this.transformFileContents(file, buffer);
-    const contentType = mime.getType(file) ?? 'application/octet-stream';
-    const version = crypto.createHash('sha1').update(contents).digest('base64');
-
-    return { contents, contentType, version };
-  }
-
-  invalidateFile(file: string) {
-    this.fileCache.delete(file);
-    this.fileCache.delete(file.replace(/index\.html$/, ''));
-    this.fileCache.delete(file.replace(/\/index\.html$/, ''));
+  async stat(file: string) {
+    return fs.promises.stat(file).catch(() => null);
   }
 
   async close() {
