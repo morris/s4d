@@ -1,5 +1,9 @@
 # Changelog
 
+## NEXT
+
+- Update dependencies
+
 ## 0.2.0
 
 - With `--spa`, only serve `index.html` when path does not include a `.`
