@@ -1,7 +1,7 @@
-import * as fs from 'fs';
-import * as http from 'http';
 import mime from 'mime';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as http from 'node:http';
+import * as path from 'node:path';
 import WebSocket, { WebSocketServer } from 'ws';
 
 export interface DevServerOptions {

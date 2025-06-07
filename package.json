@@ -21,13 +21,13 @@
   "engines": {
     "node": ">=20"
   },
+  "files": [
+    "dist"
+  ],
   "exports": "./dist/index.js",
   "bin": {
     "s4d": "dist/bin.js"
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "format": "prettier --write .",

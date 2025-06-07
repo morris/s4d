@@ -1,18 +1,14 @@
 {
   "include": ["src", "test"],
   "compilerOptions": {
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "esModuleInterop": true,
 
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true,
     "strict": true,
-    "strictFunctionTypes": true,
-    "strictNullChecks": true,
+    "noUnusedLocals": true,
 
-    "target": "ES2022",
-    "module": "ES2022",
+    "target": "es2022",
+    "module": "nodenext",
     "declaration": true,
     "sourceMap": true,
 
